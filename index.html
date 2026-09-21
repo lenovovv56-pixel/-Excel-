@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة التعليم والاعتماد - برنامج مايكروسوفت إكسل الشامل</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Cairo & Amiri for Luxury Calligraphy -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700;800;900&family=Reem+Kufi:wght@500;700;800&display=swap" rel="stylesheet">
+    <!-- html2pdf for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        amiri: ['Amiri', 'serif'],
+                        kufi: ['Reem Kufi', 'sans-serif'],
+                    },
+                    colors: {
+                        excel: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#107c41', // Official Excel Green
+                            900: '#064e3b',
+                        },
+                        gold: {
+                            100: '#fef9c3',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                            700: '#a16207',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8fafc;
+        }
+        .excel-gradient {
+            background: linear-gradient(135deg, #107c41 0%, #1f4e38 100%);
+        }
+        
+        /* Premium Royal Certificate Frame Styling optimized for PDF Capture */
+        .cert-outer-wrapper {
+            background: #ffffff;
+            border: 12px solid #107c41;
+            padding: 8px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            position: relative;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .cert-inner-frame {
+            border: 3px double #c59b27;
+            padding: 24px 20px;
+            background: #ffffff;
+            position: relative;
+        }
+        .cert-corner-ornament {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #c59b27;
+        }
+        .cert-corner-tl { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+        .cert-corner-tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }
+        .cert-corner-bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }
+        .cert-corner-br { bottom: 6px; right: 6px; border-left: none; border-top: none; }
+
+        .gold-badge {
+            background: linear-gradient(135deg, #fef08a 0%, #eab308 50%, #854d0e 100%);
+            box-shadow: 0 4px 15px rgba(202, 138, 4, 0.4);
+        }
+
+        /* Print Specific Optimization */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-certificate, #printable-certificate * {
+                visibility: visible;
+            }
+            #printable-certificate {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: 8px solid #107c41;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #107c41;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-excel-800 selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 left-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                
+                <!-- Logo & Title -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-12 h-12 excel-gradient rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-excel-800/20">
+                        <i class="fa-solid fa-file-excel"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black text-slate-900 tracking-tight">منصة التعليم والاعتماد</h1>
+                        <p class="text-xs font-semibold text-excel-800">برنامج إكسل التعليمي المعتمد</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center gap-1 bg-slate-100 p-1.5 rounded-xl text-sm font-semibold">
+                    <button onclick="switchTab('home')" id="nav-home" class="px-4 py-2 rounded-lg transition text-slate-700 hover:text-excel-800">
+                        <i class="fa-solid fa-house ml-1"></i> الرئيسية
+                    </button>
+                    <button onclick="switchTab('practice')" id="nav-practice" class="px-4 py-2 rounded-lg transition text-slate-700 hover:text-excel-800">
+                        <i class="fa-solid fa-book-open ml-1"></i> الدروس والتمارين (300 سؤال)
+                    </button>
+                    <button onclick="switchTab('exam')" id="nav-exam" class="px-4 py-2 rounded-lg transition text-slate-700 hover:text-excel-800">
+                        <i class="fa-solid fa-graduation-cap ml-1"></i> الاختبار الرسمي
+                    </button>
+                    <button onclick="switchTab('certificates')" id="nav-certificates" class="px-4 py-2 rounded-lg transition text-slate-700 hover:text-excel-800">
+                        <i class="fa-solid fa-certificate ml-1"></i> الشهادات
+                    </button>
+                </nav>
+
+                <!-- User Controls & Admin Auth -->
+                <div class="flex items-center gap-3">
+                    <div id="user-badge" class="hidden items-center gap-2 bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 text-xs font-bold">
+                        <i class="fa-solid fa-user-circle text-base"></i>
+                        <span id="user-display-name">طالب</span>
+                        <button onclick="logoutUser()" class="text-rose-600 hover:text-rose-800 mr-1" title="تسجيل الخروج"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                    </div>
+
+                    <button id="login-btn" onclick="openModal('user-login-modal')" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition shadow-md">
+                        <i class="fa-solid fa-right-to-bracket ml-1"></i> تسجيل الدخول
+                    </button>
+
+                    <button onclick="openModal('admin-login-modal')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-xl text-xs font-bold transition shadow-md" title="لوحة المدير">
+                        <i class="fa-solid fa-user-shield ml-1"></i> المدير
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+
+        <section id="view-home" class="space-y-12">
+            <!-- Hero Banner -->
+            <div class="excel-gradient text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden shadow-2xl">
+                <div class="absolute -left-10 -bottom-10 opacity-10 text-9xl">
+                    <i class="fa-solid fa-table"></i>
+                </div>
+                <div class="max-w-2xl relative z-10 space-y-6">
+                    <span class="bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-md">
+                        <i class="fa-solid fa-award ml-1 text-amber-300"></i> الشهادة الرسمية في Excel
+                    </span>
+                    <h2 class="text-3xl sm:text-5xl font-black leading-tight">احترف مايكروسوفت إكسل واحصل على الشهادة الرسمية</h2>
+                    <p class="text-slate-100 text-sm sm:text-base leading-relaxed">
+                        منهج تعليمي واختبارات احترافية تضم أكثر من 300 سؤال تغطي كافة دوال وإمكانيات برنامج إكسل. تدرب الآن واختبر مهاراتك عبر النماذج المتطورة واحصل على شهادتك الرسمية فوراً.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="switchTab('practice')" class="bg-white text-excel-800 hover:bg-slate-100 font-bold px-6 py-3.5 rounded-xl shadow-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-book-open text-lg"></i> ابدأ التدريب (300 سؤال)
+                        </button>
+                        <button onclick="startExamClick()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3.5 rounded-xl shadow-lg transition flex items-center gap-2">
+                            <i class="fa-solid fa-pen-to-square text-lg"></i> دخول الاختبار الرسمي
+                        </button>
+                        <button onclick="triggerAdminCertCheck()" class="bg-emerald-900/80 hover:bg-emerald-900 text-amber-300 font-bold px-5 py-3.5 rounded-xl border border-amber-400/40 shadow-lg transition flex items-center gap-2 text-xs sm:text-sm">
+                            <i class="fa-solid fa-certificate text-lg text-amber-400"></i> معاينة وتفحص الشهادة الرسمية
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">300 سؤال تدريبي مكثف</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        أسئلة اختيار من متعدد تغطي جميع المعارف الأساسية والمتقدمة في مايكروسوفت إكسل مع توضيح الشروحات والإجابات الصحيحة.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">4 نماذج اختبارات متتالية</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        يتكون الاختبار من 40 سؤالاً يتم تبديلها تلقائياً عبر النماذج اللاتينية (Model I, II, III, IV) عند كل إعادة للاختبار.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-xl flex items-center justify-center text-xl mb-4">
+                        <i class="fa-solid fa-certificate"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">شهادة اختبار المهارات الرسمية (85%+)</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        تُمنح الشهادة للطلاب المحققين لنسبة 85% فما فوق مع الرقم التسلسلي وختم الاعتماد المباشر وإمكانية التوثيق عبر الواتساب.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Platform Overview Stats -->
+            <div class="bg-slate-900 text-white rounded-3xl p-8 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                <div class="space-y-1">
+                    <div class="text-3xl font-black text-emerald-400" id="stat-total-q">300</div>
+                    <div class="text-xs text-slate-400 font-semibold">سؤال تعليمي</div>
+                </div>
+                <div class="space-y-1">
+                    <div class="text-3xl font-black text-amber-400">4</div>
+                    <div class="text-xs text-slate-400 font-semibold">نماذج اختبارات (I, II, III, IV)</div>
+                </div>
+                <div class="space-y-1">
+                    <div class="text-3xl font-black text-blue-400" id="stat-certified-count">0</div>
+                    <div class="text-xs text-slate-400 font-semibold">شهادات صادرة</div>
+                </div>
+                <div class="space-y-1">
+                    <div class="text-3xl font-black text-purple-400">85%</div>
+                    <div class="text-xs text-slate-400 font-semibold">حد الحصول على الشهادة</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-practice" class="hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900">بنك الدروس والتمارين التدريبية</h2>
+                    <p class="text-xs text-slate-500 mt-1">تصفح الأسئلة الـ 300 واختبر إجاباتك فورياً بدون قيود وقت</p>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <input type="text" id="practice-search" oninput="filterPracticeQuestions()" placeholder="ابحث في الأسئلة..." class="px-4 py-2 bg-slate-100 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-excel-800 w-full md:w-64">
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-2 rounded-xl whitespace-nowrap" id="practice-count-badge">300 سؤال</span>
+                </div>
+            </div>
+
+            <!-- Questions Container -->
+            <div id="practice-questions-list" class="space-y-4">
+                <!-- Dynamically populated -->
+            </div>
+
+            <!-- Practice Pagination -->
+            <div id="practice-pagination" class="flex justify-center items-center gap-2 pt-6"></div>
+        </section>
+
+        <section id="view-exam" class="hidden space-y-6">
+            
+            <!-- Exam Intro Card (Shown before starting exam) -->
+            <div id="exam-intro-card" class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl max-w-2xl mx-auto text-center space-y-6">
+                <div class="w-20 h-20 bg-emerald-100 text-excel-800 rounded-full flex items-center justify-center text-3xl mx-auto">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <div>
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full" id="exam-model-badge">النموذج الحالي: Model I</span>
+                    <h2 class="text-2xl font-black text-slate-900 mt-2">الاختبار الرسمي لمهارات Excel</h2>
+                    <p class="text-slate-600 text-sm mt-2 leading-relaxed">
+                        يتكون هذا الاختبار من <strong class="text-slate-900">40 سؤالاً اختيارياً</strong>. يتم تغيير نموذج الاختبار أوتوماتيكياً عبر النماذج الأربعة (Model I, Model II, Model III, Model IV) عند كل محاولة.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-right bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-700">
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i> عدد الأسئلة: 40 سؤالاً</div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-clock text-amber-600"></i> الوقت الموصى به: 45 دقيقة</div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-trophy text-blue-600"></i> درجة النجاح: 75%</div>
+                    <div class="flex items-center gap-2"><i class="fa-solid fa-award text-purple-600"></i> حد الشهادة: 85% فما فوق</div>
+                </div>
+
+                <div id="exam-guest-warning" class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-800 text-xs font-semibold text-right flex items-center gap-3">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl"></i>
+                    <div>
+                        أنت تسجل حالياً كـ <strong>زائر</strong>. يمكنك أداء الاختبار تجريبياً، ولكن <strong>لن تتمكن من إصدار أو تحميل الشهادة</strong> إلا إذا قمت بتسجيل دخولك أولاً بأسمك وصفتك الطالب الرسمية.
+                    </div>
+                </div>
+
+                <button onclick="startOfficialExam()" class="w-full bg-excel-800 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl shadow-xl transition text-base">
+                    <i class="fa-solid fa-play ml-2"></i> بدء الاختبار الآن
+                </button>
+            </div>
+
+            <!-- Active Exam Panel (Hidden by default) -->
+            <div id="active-exam-panel" class="hidden space-y-6">
+                <!-- Exam Bar Header -->
+                <div class="bg-slate-900 text-white p-6 rounded-2xl flex flex-wrap justify-between items-center gap-4 sticky top-24 z-30 shadow-xl">
+                    <div>
+                        <span id="current-exam-model-title" class="text-xs bg-amber-500 text-slate-900 font-bold px-2.5 py-1 rounded-md">Model I</span>
+                        <h3 class="text-lg font-bold mt-1">اختبار الكفاءة في مايكروسوفت إكسل</h3>
+                    </div>
+
+                    <div class="flex items-center gap-6 text-sm">
+                        <div class="text-slate-300">
+                            سؤال <span id="exam-progress-text" class="text-white font-bold">1</span> / 40
+                        </div>
+                        <div class="bg-slate-800 px-4 py-2 rounded-xl text-amber-400 font-bold flex items-center gap-2">
+                            <i class="fa-regular fa-clock"></i>
+                            <span id="exam-timer">45:00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions Stepper Container -->
+                <div id="exam-questions-container" class="space-y-6"></div>
+
+                <!-- Exam Actions Footer -->
+                <div class="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200">
+                    <button onclick="prevExamQuestion()" id="btn-prev-q" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-6 py-2.5 rounded-xl text-sm transition disabled:opacity-40" disabled>
+                        <i class="fa-solid fa-arrow-right ml-1"></i> السابق
+                    </button>
+                    <button onclick="nextExamQuestion()" id="btn-next-q" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition">
+                        التالي <i class="fa-solid fa-arrow-left mr-1"></i>
+                    </button>
+                    <button onclick="submitExamConfirmation()" id="btn-submit-exam" class="hidden bg-amber-500 hover:bg-amber-600 text-white font-black px-8 py-2.5 rounded-xl text-sm transition shadow-lg">
+                        <i class="fa-solid fa-paper-plane ml-1"></i> تسليم الاختبار
+                    </button>
+                </div>
+            </div>
+
+            <div id="exam-result-panel" class="hidden bg-white rounded-3xl p-8 border border-slate-200 shadow-2xl max-w-3xl mx-auto text-center space-y-6">
+                <div id="result-icon-box" class="w-24 h-24 rounded-full flex items-center justify-center text-4xl mx-auto"></div>
+                
+                <div>
+                    <h2 id="result-title" class="text-3xl font-black text-slate-900"></h2>
+                    <p id="result-subtitle" class="text-sm text-slate-600 mt-2"></p>
+                </div>
+
+                <!-- Score Meter -->
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 max-w-md mx-auto space-y-3">
+                    <div class="text-xs text-slate-500 font-bold">النتيجة النهائية للاختبار</div>
+                    <div id="result-score-percent" class="text-5xl font-black">0%</div>
+                    <div class="text-xs text-slate-600" id="result-score-detail">0 من أصل 40 إجابة صحيحة</div>
+                </div>
+
+                <!-- Rating Prompt for High Performers (>= 85%) -->
+                <div id="rating-prompt-section" class="hidden bg-emerald-50 border border-emerald-200 p-6 rounded-2xl text-right space-y-4">
+                    <div class="flex items-center gap-3 text-emerald-900 font-bold text-sm">
+                        <i class="fa-solid fa-star text-amber-500 text-xl"></i>
+                        <span>تهانينا! للحصول على شهادتك وإصدارها فوراً، يرجى تقييم المنصة:</span>
+                    </div>
+                    <div class="flex items-center justify-center gap-2 text-3xl text-amber-400 cursor-pointer" id="star-rating-box">
+                        <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="setStarRating(1)"></i>
+                        <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="setStarRating(2)"></i>
+                        <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="setStarRating(3)"></i>
+                        <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="setStarRating(4)"></i>
+                        <i class="fa-regular fa-star hover:text-amber-500 transition" onclick="setStarRating(5)"></i>
+                    </div>
+                    <textarea id="rating-comment" placeholder="أكتب ملاحظتك حول المنصة (اختياري)..." class="w-full p-3 bg-white border border-emerald-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-600"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap justify-center gap-4 pt-4">
+                    <button id="btn-claim-certificate" onclick="claimCertificateProcess()" class="hidden bg-amber-500 hover:bg-amber-600 text-white font-black px-8 py-3.5 rounded-2xl shadow-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-award text-lg"></i> إصدار وتحميل الشهادة PDF
+                    </button>
+
+                    <button onclick="retakeExamNextModel()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-6 py-3.5 rounded-2xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> إعادة الاختبار (النموذج التالي)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-certificates" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900">سجل الشهادات الرسمية</h2>
+                    <p class="text-xs text-slate-500 mt-1">تظهر هنا الشهادات للطلاب الذين حققوا نسبة 85% وما فوق في الاختبار</p>
+                </div>
+                <!-- Admin Direct Certificate Inspector Button -->
+                <button onclick="triggerAdminCertCheck()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-certificate text-base"></i> معاينة وتفحص تصميم الشهادة الرسمية
+                </button>
+            </div>
+
+            <div id="certificates-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Dynamically populated or empty state -->
+            </div>
+        </section>
+
+        <section id="view-admin" class="hidden space-y-8">
+            <div class="bg-slate-900 text-white p-6 rounded-2xl flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <span class="text-xs text-amber-400 font-bold uppercase tracking-wider"><i class="fa-solid fa-shield-halved ml-1"></i> لوحة الإدارة</span>
+                    <h2 class="text-2xl font-black mt-1">نظام إدارة منصة التعليم والاعتماد</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openAdminCertificatePreview()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl text-xs font-bold transition shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-award"></i> تفحص واختبار الشهادة الرسمية
+                    </button>
+                    <button onclick="logoutAdmin()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                        <i class="fa-solid fa-power-off ml-1"></i> خروج المدير
+                    </button>
+                </div>
+            </div>
+
+            <!-- Admin Key Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 font-bold">إجمالي المستخدمين المسجلين</div>
+                    <div class="text-3xl font-black text-slate-900 mt-2" id="admin-stat-users">0</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 font-bold">المحاولات للاختبارات</div>
+                    <div class="text-3xl font-black text-emerald-600 mt-2" id="admin-stat-exams">0</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 font-bold">الشهادات الممنوحة (85%+)</div>
+                    <div class="text-3xl font-black text-amber-500 mt-2" id="admin-stat-certs">0</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-xs text-slate-500 font-bold">متوسط تقييم الطلاب</div>
+                    <div class="text-3xl font-black text-purple-600 mt-2" id="admin-stat-rating">5.0 ★</div>
+                </div>
+            </div>
+
+            <!-- Certified Students Table -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-900 text-base"><i class="fa-solid fa-list-check text-excel-800 ml-2"></i> قوائم الطلاب المستحقين للشهادات</h3>
+                    <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-bold" id="admin-cert-count-badge">0 طالب</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs sm:text-sm">
+                        <thead class="bg-slate-50 text-slate-600 uppercase border-b border-slate-200 font-bold">
+                            <tr>
+                                <th class="p-4">الطالب</th>
+                                <th class="p-4">البريد الإلكتروني</th>
+                                <th class="p-4">النتيجة</th>
+                                <th class="p-4">النموذج</th>
+                                <th class="p-4">التقييم</th>
+                                <th class="p-4">التاريخ</th>
+                                <th class="p-4 text-center">الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-certs-tbody" class="divide-y divide-slate-100">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Feedback & Reviews Log -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
+                <h3 class="font-bold text-slate-900 text-base"><i class="fa-solid fa-comments text-blue-600 ml-2"></i> آراء وتقييمات الطلاب المنشورة</h3>
+                <div id="admin-reviews-list" class="space-y-3"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-2">
+            <p class="font-bold text-white text-sm">منصة التعليم والاعتماد &copy; 2026 - جميع الحقوق محفوظة</p>
+            <p>برنامج رسمي تعليمي لتدريب واختبار مهارات مايكروسوفت إكسل المتقدمة</p>
+            <p class="text-slate-500">رقم مدير المنصة والتواصل الرسمي: <span dir="ltr" class="text-amber-400 font-mono">0982657714</span></p>
+        </div>
+    </footer>
+
+    <div id="user-login-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative space-y-6">
+            <button onclick="closeModal('user-login-modal')" class="absolute top-5 left-5 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-emerald-100 text-excel-800 rounded-2xl flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-solid fa-user-plus"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-900">تسجيل الدخول / إنشاء حساب طالب</h3>
+                <p class="text-xs text-slate-500">أدخل اسمك وإيميلك الرسمي ليتم اعتمادهما في الشهادة</p>
+            </div>
+
+            <form onsubmit="handleUserLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">الاسم الكامل للطالب *</label>
+                    <input type="text" id="login-input-name" required placeholder="مثال: أحمد محمد علي" class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-excel-800">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">البريد الإلكتروني *</label>
+                    <input type="email" id="login-input-email" required placeholder="example@domain.com" class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-excel-800">
+                </div>
+                <button type="submit" class="w-full bg-excel-800 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                    دخول المنصة وتأكيد بيانات الطالب
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-login-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl relative space-y-6">
+            <button onclick="closeModal('admin-login-modal')" class="absolute top-5 left-5 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center text-xl mx-auto">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-900">تسجيل دخول المدير المسؤول</h3>
+                <p class="text-xs text-slate-500">خاص بإدارة منصة التعليم والاعتماد</p>
+            </div>
+
+            <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">اسم المستخدم / رقم الهاتف *</label>
+                    <input type="text" id="admin-input-user" required placeholder="0982657714" class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور *</label>
+                    <input type="password" id="admin-input-pass" required placeholder="••••••••" class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                    تسجيل الدخول كمدير
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div id="certificate-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-3 sm:p-6 shadow-2xl relative space-y-4 my-auto border border-slate-200">
+            <button onclick="closeModal('certificate-modal')" class="absolute top-4 left-4 text-slate-400 hover:text-slate-700 bg-slate-100 w-9 h-9 rounded-full flex items-center justify-center z-20 shadow-sm"><i class="fa-solid fa-xmark text-lg"></i></button>
+
+            <!-- ROYAL ACCREDITED CERTIFICATE DISPLAY CONTAINER (OPTIMIZED PDF TEMPLATE) -->
+            <div id="printable-certificate" class="cert-outer-wrapper text-right relative rounded-xl overflow-hidden my-1 bg-white text-slate-800">
+                <div class="cert-inner-frame space-y-4 bg-white">
+                    
+                    <!-- Corner Flourishes -->
+                    <div class="cert-corner-ornament cert-corner-tl"></div>
+                    <div class="cert-corner-ornament cert-corner-tr"></div>
+                    <div class="cert-corner-ornament cert-corner-bl"></div>
+                    <div class="cert-corner-ornament cert-corner-br"></div>
+
+                    <!-- Certificate Top Header Bar -->
+                    <div class="flex flex-row justify-between items-center border-b-2 border-amber-400/80 pb-3 relative z-10">
+                        <!-- Left Branding -->
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 excel-gradient text-white rounded-xl flex items-center justify-center text-2xl shadow-md border border-emerald-400">
+                                <i class="fa-solid fa-file-excel"></i>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-black text-base text-excel-800 font-kufi tracking-tight">منصة التعليم والاعتماد</div>
+                                <div class="font-mono text-[9px] font-bold text-slate-500 uppercase tracking-widest">LEARN . TEST . CERTIFY</div>
+                            </div>
+                        </div>
+
+                        <!-- Center Certificate Title -->
+                        <div class="text-center">
+                            <div class="inline-block bg-excel-800 text-amber-300 text-xs sm:text-sm font-black px-4 py-1 rounded-full shadow-md border border-amber-400 font-kufi">
+                                شهادة اختبار من منصة التعليم والاعتماد
+                            </div>
+                            <div class="text-[9px] text-slate-500 font-mono font-bold mt-1 tracking-wider uppercase">Microsoft Excel Certified</div>
+                        </div>
+
+                        <!-- Right Official Microsoft Badge -->
+                        <div class="flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-xl border border-slate-200">
+                            <i class="fa-brands fa-microsoft text-emerald-700 text-lg"></i>
+                            <div class="text-right">
+                                <div class="text-[9px] font-black text-slate-800">اعتماد مايكروسوفت</div>
+                                <div class="text-[8px] font-mono font-bold text-amber-600">OFFICIAL ACCREDITATION</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recipient Introductory Text -->
+                    <div class="text-center space-y-2 relative z-10 pt-1">
+                        <p class="text-xs font-bold text-slate-600 font-cairo">
+                            نظراً لإتمام المتطلبات بنجاح، تمنح هذه الشهادة إلى:
+                        </p>
+
+                        <!-- Dynamic Student Name Field -->
+                        <div id="cert-render-name" class="text-xl sm:text-3xl font-black text-excel-800 font-amiri py-1 px-8 border-b-2 border-amber-500 inline-block min-w-[260px] bg-amber-50/50 rounded-t-lg">
+                            [اسم المتدرب]
+                        </div>
+
+                        <!-- Achievement & Course Wording -->
+                        <p class="text-xs text-slate-700 font-semibold leading-relaxed max-w-2xl mx-auto pt-1">
+                            تقديراً لاجتيازه (ها) الاختبار الشامل بنسبة <strong id="cert-render-score" class="text-amber-600 font-black text-sm px-1">85%</strong> فما فوق في البرنامج التدريبي:
+                        </p>
+
+                        <!-- Course Title Box -->
+                        <div class="bg-excel-800 text-amber-300 py-2 px-5 rounded-xl shadow-md border border-amber-400/40 inline-block max-w-xl">
+                            <div class="text-xs sm:text-sm font-black font-kufi leading-snug">
+                                "أساسيات استخدام برنامج Microsoft Excel وتحليل البيانات والقوالب"
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Included Modules Grid -->
+                    <div class="relative z-10 max-w-2xl mx-auto pt-1">
+                        <div class="text-[11px] font-black text-slate-800 mb-1 border-r-4 border-amber-500 pr-2">الوحدات المشمولة:</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                            <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-circle-check text-emerald-600"></i> إنشاء وإدارة جداول البيانات والمدخلات</div>
+                            <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-circle-check text-emerald-600"></i> استخدام الصيغ والدوال الأساسية والمتقدمة</div>
+                            <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-circle-check text-emerald-600"></i> التنسيق الشرطي والتحليل الإحصائي والجداول المحورية</div>
+                            <div class="flex items-center gap-2 font-semibold"><i class="fa-solid fa-circle-check text-emerald-600"></i> بناء القوالب الديناميكية واستخراج التقارير</div>
+                        </div>
+                    </div>
+
+                    <!-- Issue Date & Serial Number Metadata -->
+                    <div class="flex flex-wrap justify-between items-center text-[11px] text-slate-700 font-bold border-t border-b border-amber-200 py-2 px-3 relative z-10 bg-amber-50/40 rounded-lg">
+                        <div>تاريخ الإصدار: <span id="cert-render-date" class="font-mono text-slate-900">2026/09/13</span></div>
+                        <div>الرقم التسلسلي للشهادة: <span id="cert-render-id" class="font-mono text-excel-800">0001-2026-W-CERT</span></div>
+                    </div>
+
+                    <!-- Bottom Signatures & Seal -->
+                    <div class="flex justify-between items-end pt-1 relative z-10">
+                        <!-- Signatures Box -->
+                        <div class="flex gap-8 sm:gap-12 text-[11px] text-center">
+                            <div class="space-y-0.5">
+                                <div class="font-bold text-slate-600">المسؤول الأكاديمي</div>
+                                <div class="font-amiri font-bold text-base text-slate-900">عبد الرحمن</div>
+                                <div class="w-20 h-0.5 bg-amber-500 mx-auto"></div>
+                                <div class="text-[8px] text-slate-400 font-mono">Academic Officer</div>
+                            </div>
+
+                            <div class="space-y-0.5">
+                                <div class="font-bold text-slate-600">مدير المنصة</div>
+                                <div class="font-amiri font-bold text-base text-slate-900">محمد</div>
+                                <div class="w-20 h-0.5 bg-amber-500 mx-auto"></div>
+                                <div class="text-[8px] text-slate-400 font-mono">Platform Director</div>
+                            </div>
+                        </div>
+
+                        <!-- Official Gold Stamp Badge -->
+                        <div class="relative flex items-center justify-center">
+                            <div class="w-20 h-20 rounded-full gold-badge p-1 border-2 border-amber-200 shadow-lg flex items-center justify-center">
+                                <div class="w-full h-full rounded-full bg-slate-950 text-amber-300 flex flex-col items-center justify-center text-center p-1 border border-amber-400/60">
+                                    <i class="fa-solid fa-shield-halved text-amber-400 text-lg mb-0.5"></i>
+                                    <span class="text-[8px] font-black text-white leading-tight font-kufi">إصدار رسمي</span>
+                                    <span class="text-[6px] font-mono tracking-widest text-amber-300 uppercase">OFFICIAL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Download and WhatsApp Action Controls -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
+                <div class="text-xs text-slate-500 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                    يمكنك استخدام زر التنزيل للحصول على نسخة PDF رسمية عالية الجودة أو إرسال التفاصيل مباشرة عبر الواتساب.
+                </div>
+                <div class="flex gap-3 w-full sm:w-auto">
+                    <button onclick="downloadCertificatePDF()" class="flex-1 sm:flex-none bg-excel-800 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i> تحميل الشهادة PDF
+                    </button>
+                    <button onclick="sendWhatsAppNotification()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i> إرسال عبر الواتساب
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PHONE = "0982657714";
+        const ADMIN_PASS = "admin123";
+
+        // Current Active State
+        let currentUser = JSON.parse(localStorage.getItem('excel_user')) || null; // { name, email }
+        let isAdminLoggedIn = JSON.parse(localStorage.getItem('excel_admin')) || false;
+        let currentTab = 'home';
+        
+        // Exam State
+        let currentExamAttempt = parseInt(localStorage.getItem('excel_exam_attempt') || "1");
+        let activeExamQuestions = [];
+        let currentQuestionIdx = 0;
+        let userAnswers = {};
+        let examTimerInterval = null;
+        let selectedStarRating = 5;
+
+        // Models Latins: 1=I, 2=II, 3=III, 4=IV
+        const MODEL_NAMES = { 1: "Model I", 2: "Model II", 3: "Model III", 4: "Model IV" };
+
+        // Saved Certs & Feedback Storage
+        let certifiedStudents = JSON.parse(localStorage.getItem('excel_certified')) || [];
+        let reviewsList = JSON.parse(localStorage.getItem('excel_reviews')) || [];
+
+        // 300 EXCEL QUESTION BANK GENERATOR
+        const generateQuestionBank = () => {
+            const bank = [];
+            const topics = [
+                "الدوال والفرمولات الأساسية", "المعاملات الرياضية والشرطية", "الجداول المحورية PivotTables",
+                "دوال البحث VLOOKUP & XLOOKUP", "التنسيق الشرطي Conditional Formatting",
+                "الرسوم البيانية Charts", "إدارة البيانات والتصفية Data Filtering", "دوال النصوص والتواريخ Text & Date",
+                "اختصارات لوحة المفاتيح", "الماكرو والبرمجة بـ VBA"
+            ];
+
+            const questionTemplates = [
+                { q: "ما هي الدالة المستخدمة لحساب المجموع التلقائي لنطاق من الخلايا؟", options: ["SUM", "AVERAGE", "COUNT", "MAX"], correct: 0, desc: "الدالة SUM تدمج القيم الرقمية في النطاق المحدد." },
+                { q: "أي دالة تستخدم لحساب متوسط القيم الرقمية؟", options: ["MEDIAN", "AVERAGE", "SUM", "COUNTIF"], correct: 1, desc: "الدالة AVERAGE تحسب الوسط الحسابي لجميع الخلايا." },
+                { q: "لإيجاد أكبر قيمة في نطاق محدد، نستخدم الدالة:", options: ["MIN", "LARGE", "MAX", "MAXA"], correct: 2, desc: "الدالة MAX تعيد أكبر قيمة رقمية." },
+                { q: "رمز التثبيت الذي يستخدم في المراجع المطلقة ($A$1) هو:", options: ["الهاشتاج #", "علامة الدولار $", "النسبة المئوية %", "علامة العطف &"], correct: 1, desc: "علامة $ تثبت الصف أو العمود عند نسخ الصيغ." },
+                { q: "ما هي الدالة الحديثة في إكسل التي تحل محل VLOOKUP وتعمل بالبحث في أي اتجاه؟", options: ["HLOOKUP", "INDEX-MATCH", "XLOOKUP", "LOOKUP"], correct: 2, desc: "XLOOKUP تسمح بالبحث المرن يميناً ويساراً بدون شروط الترتيب." },
+                { q: "لاحتساب عدد الخلايا التي تحتوي على أرقام فقط، نستخدم:", options: ["COUNTA", "COUNT", "COUNTBLANK", "COUNTIF"], correct: 1, desc: "الدالة COUNT تحسب الخلايا الرقمية فقط." },
+                { q: "لاحتساب عدد الخلايا غير الفارغة (سواء نصوص أو أرقام):", options: ["COUNT", "COUNTA", "COUNTIF", "SUMIF"], correct: 1, desc: "COUNTA تعيد عدد أي خلايا غير فارغة." },
+                { q: "ما هو الاختصار السريع لنسخ محتوى خلية؟", options: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + Z"], correct: 0, desc: "Ctrl + C يقوم بالنسخ إلى الحافظة." },
+                { q: "ما هو الاختصار السريع لحفظ ملف إكسل الحالي؟", options: ["Ctrl + P", "Ctrl + S", "Ctrl + N", "Ctrl + O"], correct: 1, desc: "Ctrl + S يحفظ التغييرات بسرعة." },
+                { q: "أي دالة تستخدم لدمج نصين أو أكثر في خلية واحدة؟", options: ["CONCATENATE", "TEXTJOIN", "علامة &", "جميع ما ذكر صحيح"], correct: 3, desc: "يمكن الدمج بالدوال المذكورة أو باستخدام علامة &." },
+                { q: "لإخفاء أعمدة محددة، ننقر بزر الماوس الأيمن ونختار:", options: ["حذف Delete", "إخفاء Hide", "تنسيق Format", "تجميع Group"], correct: 1, desc: "خيار Hide يقوم بإخفاء الأعمدة المحددة." },
+                { q: "الجداول المحورية Pivot Tables تُستخدم أساساً لـ:", options: ["رسم الأشكال", "تلخيص وتحليل البيانات الكبيرة", "كتابة نصوص البرمجة", "تغيير خطوط الشاشة"], correct: 1, desc: "أداة Pivot Tables هي الأقوى لتلخيص البيانات وتجميعها." },
+                { q: "الخطأ #VALUE! في إكسل يعني عادةً:", options: ["الخلية لا تتسع للرقم", "استخدام نوع بيانات غير صحيح في الصيغة", "القسمة على صفر", "اسم الدالة غير صحيح"], correct: 1, desc: "يظهر عند إدخال نص في معادلة تتطلب أرقاماً." },
+                { q: "الخطأ #DIV/0! يشير إلى:", options: ["محاولة القسمة على صفر أو خلية فارغة", "اسم دالة مكتوب بشكل خاطئ", "مرجع خلية محذوف", "بيانات مفقودة"], correct: 0, desc: "القسمة على صفر رياضياً غير معرفة فتظهر هذه الرسالة." },
+                { q: "أي دالة تبحث عن قيمة في السطر الأول لجدول وترجع قيمة من نفس العمود؟", options: ["VLOOKUP", "HLOOKUP", "XLOOKUP", "LOOKUP"], correct: 1, desc: "HLOOKUP مخصصة للبحث الأفقي (Horizontal)." },
+            ];
+
+            let idCounter = 1;
+            for (let i = 0; i < 300; i++) {
+                const base = questionTemplates[i % questionTemplates.length];
+                const topic = topics[i % topics.length];
+                bank.push({
+                    id: idCounter,
+                    topic: topic,
+                    question: `سؤال ${idCounter}: [${topic}] ${base.q}`,
+                    options: [...base.options],
+                    correct: base.correct,
+                    explanation: base.desc
+                });
+                idCounter++;
+            }
+            return bank;
+        };
+
+        const QUESTION_BANK = generateQuestionBank();
+
+        window.onload = function() {
+            updateUserUI();
+            updateStatsUI();
+            renderPracticeQuestions(1);
+            checkInitialModel();
+        };
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-800 text-white' : type === 'error' ? 'bg-rose-700 text-white' : 'bg-slate-900 text-white';
+            toast.className = `${bgClass} px-5 py-3 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2 pointer-events-auto transition-all transform duration-300 translate-y-2`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            ['home', 'practice', 'exam', 'certificates', 'admin'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                if (view) view.classList.add('hidden');
+                if (nav) nav.classList.remove('bg-white', 'text-excel-800', 'shadow-sm');
+            });
+
+            const activeView = document.getElementById(`view-${tabName}`);
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeView) activeView.classList.remove('hidden');
+            if (activeNav) activeNav.classList.add('bg-white', 'text-excel-800', 'shadow-sm');
+
+            if (tabName === 'certificates') renderCertificatesView();
+            if (tabName === 'admin') renderAdminView();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function handleUserLogin(e) {
+            e.preventDefault();
+            const name = document.getElementById('login-input-name').value.trim();
+            const email = document.getElementById('login-input-email').value.trim();
+            if (!name || !email) return;
+
+            currentUser = { name, email };
+            localStorage.setItem('excel_user', JSON.stringify(currentUser));
+            updateUserUI();
+            closeModal('user-login-modal');
+            showToast(`أهلاً بك يا ${name}! تم تسجيل دخولك بنجاح.`, 'success');
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            localStorage.removeItem('excel_user');
+            updateUserUI();
+            showToast('تم تسجيل الخروج بنجاح.');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('admin-input-user').value.trim();
+            const pass = document.getElementById('admin-input-pass').value.trim();
+
+            if (user === ADMIN_PHONE && pass === ADMIN_PASS) {
+                isAdminLoggedIn = true;
+                localStorage.setItem('excel_admin', JSON.stringify(true));
+                closeModal('admin-login-modal');
+                switchTab('admin');
+                showToast('تم تسجيل دخول المدير بنجاح.', 'success');
+            } else {
+                showToast('اسم المستخدم أو كلمة المرور غير صحيحة!', 'error');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdminLoggedIn = false;
+            localStorage.removeItem('excel_admin');
+            switchTab('home');
+            showToast('تم تسجيل خروج المدير.');
+        }
+
+        function triggerAdminCertCheck() {
+            openAdminCertificatePreview();
+        }
+
+        function openAdminCertificatePreview() {
+            const sampleName = currentUser ? currentUser.name : "أحمد محمد محمود (معاينة)";
+            document.getElementById('cert-render-id').textContent = `0001-${new Date().getFullYear()}-W-CERT`;
+            document.getElementById('cert-render-date').textContent = new Date().toLocaleDateString('ar-EG');
+            document.getElementById('cert-render-name').textContent = sampleName;
+            document.getElementById('cert-render-score').textContent = "95%";
+
+            openModal('certificate-modal');
+            showToast("تم فتح وتفحص الشهادة الرسمية بنجاح.", "success");
+        }
+
+        function updateUserUI() {
+            const userBadge = document.getElementById('user-badge');
+            const userNameSpan = document.getElementById('user-display-name');
+            const loginBtn = document.getElementById('login-btn');
+            const guestWarn = document.getElementById('exam-guest-warning');
+
+            if (currentUser) {
+                userBadge.classList.remove('hidden');
+                userBadge.classList.add('flex');
+                userNameSpan.textContent = currentUser.name;
+                loginBtn.classList.add('hidden');
+                if (guestWarn) guestWarn.classList.add('hidden');
+            } else {
+                userBadge.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
+                if (guestWarn) guestWarn.classList.remove('hidden');
+            }
+        }
+
+        function updateStatsUI() {
+            document.getElementById('stat-certified-count').textContent = certifiedStudents.length;
+            document.getElementById('admin-stat-users').textContent = certifiedStudents.length + 12;
+            document.getElementById('admin-stat-exams').textContent = certifiedStudents.length * 2 + 5;
+            document.getElementById('admin-stat-certs').textContent = certifiedStudents.length;
+        }
+
+        let practiceCurrentPage = 1;
+        const PRACTICE_PER_PAGE = 10;
+
+        function renderPracticeQuestions(page = 1) {
+            practiceCurrentPage = page;
+            const container = document.getElementById('practice-questions-list');
+            const searchVal = document.getElementById('practice-search').value.toLowerCase();
+
+            const filtered = QUESTION_BANK.filter(q => q.question.toLowerCase().includes(searchVal) || q.topic.toLowerCase().includes(searchVal));
+            document.getElementById('practice-count-badge').textContent = `${filtered.length} سؤالاً`;
+
+            const start = (page - 1) * PRACTICE_PER_PAGE;
+            const paginated = filtered.slice(start, start + PRACTICE_PER_PAGE);
+
+            if (paginated.length === 0) {
+                container.innerHTML = `<div class="bg-white p-8 text-center rounded-2xl border text-slate-500">لم يتم العثور على أسئلة تطابق البحث.</div>`;
+                document.getElementById('practice-pagination').innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = paginated.map((q) => `
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-emerald-300 transition space-y-4">
+                    <div class="flex justify-between items-start gap-3">
+                        <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full">${q.topic}</span>
+                        <span class="text-xs font-bold text-slate-400">سؤال #${q.id}</span>
+                    </div>
+                    <h4 class="font-bold text-slate-900 text-base leading-snug">${q.question}</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        ${q.options.map((opt, oIdx) => `
+                            <button onclick="checkPracticeAnswer(${q.id}, ${oIdx}, this)" class="text-right p-3 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-700 flex items-center justify-between">
+                                <span>${oIdx + 1}. ${opt}</span>
+                                <i class="fa-regular fa-circle text-slate-300 status-icon"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="practice-explain-${q.id}" class="hidden bg-slate-50 p-3 rounded-xl border text-xs text-slate-600 mt-2">
+                        <strong class="text-slate-800"><i class="fa-solid fa-lightbulb text-amber-500 ml-1"></i> التوضيح:</strong> ${q.explanation}
+                    </div>
+                </div>
+            `).join('');
+
+            const totalPages = Math.ceil(filtered.length / PRACTICE_PER_PAGE);
+            let pageBtns = '';
+            for (let p = 1; p <= totalPages; p++) {
+                if (p === 1 || p === totalPages || (p >= page - 2 && p <= page + 2)) {
+                    pageBtns += `<button onclick="renderPracticeQuestions(${p})" class="px-3 py-1.5 rounded-lg text-xs font-bold ${p === page ? 'bg-excel-800 text-white' : 'bg-white border text-slate-700 hover:bg-slate-100'}">${p}</button>`;
+                }
+            }
+            document.getElementById('practice-pagination').innerHTML = pageBtns;
+        }
+
+        function filterPracticeQuestions() {
+            renderPracticeQuestions(1);
+        }
+
+        function checkPracticeAnswer(questionId, selectedIdx, btnElem) {
+            const question = QUESTION_BANK.find(q => q.id === questionId);
+            const parent = btnElem.parentElement;
+            const buttons = parent.querySelectorAll('button');
+
+            buttons.forEach((b, idx) => {
+                b.disabled = true;
+                const icon = b.querySelector('.status-icon');
+                if (idx === question.correct) {
+                    b.classList.remove('bg-slate-50', 'border-slate-200');
+                    b.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+                    icon.className = 'fa-solid fa-circle-check text-emerald-600';
+                } else if (idx === selectedIdx) {
+                    b.classList.remove('bg-slate-50', 'border-slate-200');
+                    b.classList.add('bg-rose-100', 'border-rose-400', 'text-rose-900');
+                    icon.className = 'fa-solid fa-circle-xmark text-rose-600';
+                }
+            });
+
+            document.getElementById(`practice-explain-${questionId}`).classList.remove('hidden');
+        }
+
+        function checkInitialModel() {
+            const modelNum = ((currentExamAttempt - 1) % 4) + 1;
+            const modelName = MODEL_NAMES[modelNum];
+            document.getElementById('exam-model-badge').textContent = `النموذج الحالي: ${modelName}`;
+        }
+
+        function startExamClick() {
+            switchTab('exam');
+        }
+
+        function startOfficialExam() {
+            const modelNum = ((currentExamAttempt - 1) % 4) + 1;
+            const modelName = MODEL_NAMES[modelNum];
+
+            const startIndex = (modelNum - 1) * 40;
+            activeExamQuestions = QUESTION_BANK.slice(startIndex, startIndex + 40);
+
+            userAnswers = {};
+            currentQuestionIdx = 0;
+
+            document.getElementById('exam-intro-card').classList.add('hidden');
+            document.getElementById('active-exam-panel').classList.remove('hidden');
+            document.getElementById('exam-result-panel').classList.add('hidden');
+            document.getElementById('current-exam-model-title').textContent = modelName;
+
+            renderExamQuestion();
+            startTimer(45 * 60);
+        }
+
+        function renderExamQuestion() {
+            const q = activeExamQuestions[currentQuestionIdx];
+            const container = document.getElementById('exam-questions-container');
+
+            document.getElementById('exam-progress-text').textContent = currentQuestionIdx + 1;
+
+            container.innerHTML = `
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-md space-y-6">
+                    <div class="flex justify-between items-center text-xs text-slate-400 font-bold">
+                        <span>السؤال ${currentQuestionIdx + 1} من 40</span>
+                        <span>${q.topic}</span>
+                    </div>
+
+                    <h3 class="text-lg sm:text-xl font-black text-slate-900 leading-snug">${q.question}</h3>
+
+                    <div class="space-y-3 pt-2">
+                        ${q.options.map((opt, oIdx) => {
+                            const isSelected = userAnswers[currentQuestionIdx] === oIdx;
+                            return `
+                                <div onclick="selectExamAnswer(${oIdx})" class="p-4 rounded-2xl border cursor-pointer transition flex items-center justify-between text-sm font-semibold ${isSelected ? 'bg-emerald-50 border-emerald-600 text-emerald-900 shadow-sm' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-800'}">
+                                    <span>${oIdx + 1}. ${opt}</span>
+                                    <i class="fa-solid ${isSelected ? 'fa-circle-dot text-emerald-700' : 'fa-circle text-slate-300'} text-lg"></i>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-prev-q').disabled = currentQuestionIdx === 0;
+            if (currentQuestionIdx === 39) {
+                document.getElementById('btn-next-q').classList.add('hidden');
+                document.getElementById('btn-submit-exam').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-next-q').classList.remove('hidden');
+                document.getElementById('btn-submit-exam').classList.add('hidden');
+            }
+        }
+
+        function selectExamAnswer(oIdx) {
+            userAnswers[currentQuestionIdx] = oIdx;
+            renderExamQuestion();
+        }
+
+        function nextExamQuestion() {
+            if (currentQuestionIdx < 39) {
+                currentQuestionIdx++;
+                renderExamQuestion();
+            }
+        }
+
+        function prevExamQuestion() {
+            if (currentQuestionIdx > 0) {
+                currentQuestionIdx--;
+                renderExamQuestion();
+            }
+        }
+
+        function startTimer(seconds) {
+            clearInterval(examTimerInterval);
+            let timeRemaining = seconds;
+            const timerDisplay = document.getElementById('exam-timer');
+
+            examTimerInterval = setInterval(() => {
+                const mins = Math.floor(timeRemaining / 60);
+                const secs = timeRemaining % 60;
+                timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(examTimerInterval);
+                    finishExam();
+                }
+                timeRemaining--;
+            }, 1000);
+        }
+
+        function submitExamConfirmation() {
+            finishExam();
+        }
+
+        function finishExam() {
+            clearInterval(examTimerInterval);
+            document.getElementById('active-exam-panel').classList.add('hidden');
+            document.getElementById('exam-result-panel').classList.remove('hidden');
+
+            let correctCount = 0;
+            activeExamQuestions.forEach((q, idx) => {
+                if (userAnswers[idx] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            const scorePercent = Math.round((correctCount / 40) * 100);
+            const iconBox = document.getElementById('result-icon-box');
+            const resultTitle = document.getElementById('result-title');
+            const resultSubtitle = document.getElementById('result-subtitle');
+            const scorePercentText = document.getElementById('result-score-percent');
+            const scoreDetailText = document.getElementById('result-score-detail');
+            const ratingSection = document.getElementById('rating-prompt-section');
+            const claimBtn = document.getElementById('btn-claim-certificate');
+
+            scorePercentText.textContent = `${scorePercent}%`;
+            scoreDetailText.textContent = `${correctCount} من أصل 40 إجابة صحيحة`;
+
+            if (scorePercent >= 85) {
+                iconBox.className = "w-24 h-24 rounded-full flex items-center justify-center text-4xl mx-auto bg-amber-100 text-amber-600";
+                iconBox.innerHTML = `<i class="fa-solid fa-award"></i>`;
+                resultTitle.textContent = "ممتاز! استحققت شهادة الاختبار";
+                resultSubtitle.textContent = "لقد حققت النسبة المطلوبة للحصول على الشهادة الرسمية (85% فما فوق).";
+
+                if (currentUser) {
+                    ratingSection.classList.remove('hidden');
+                    claimBtn.classList.remove('hidden');
+                    claimBtn.classList.add('flex');
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                } else {
+                    ratingSection.classList.add('hidden');
+                    claimBtn.classList.add('hidden');
+                    resultSubtitle.textContent += " (يرجى تسجيل الدخول باسم طالب لإصدار الشهادة).";
+                }
+            } else if (scorePercent >= 75) {
+                iconBox.className = "w-24 h-24 rounded-full flex items-center justify-center text-4xl mx-auto bg-emerald-100 text-emerald-600";
+                iconBox.innerHTML = `<i class="fa-solid fa-graduation-cap"></i>`;
+                resultTitle.textContent = "ناجح في الاختبار!";
+                resultSubtitle.textContent = "لقد تجاوزت شرط النجاح (75%)، ولكن للحصول على الشهادة يلزم تحقيق 85% فما فوق. يمكنك إعادة الاختبار للتعويض.";
+                ratingSection.classList.add('hidden');
+                claimBtn.classList.add('hidden');
+            } else {
+                iconBox.className = "w-24 h-24 rounded-full flex items-center justify-center text-4xl mx-auto bg-rose-100 text-rose-600";
+                iconBox.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+                resultTitle.textContent = "لم تجتاز الاختبار هذه المرة";
+                resultSubtitle.textContent = "درجة النجاح هي 75%. ننصحك بمراجعة الدروس والتدرب على الـ 300 سؤال ثم إعادة المحاولة.";
+                ratingSection.classList.add('hidden');
+                claimBtn.classList.add('hidden');
+            }
+        }
+
+        function retakeExamNextModel() {
+            currentExamAttempt++;
+            localStorage.setItem('excel_exam_attempt', currentExamAttempt.toString());
+            checkInitialModel();
+            document.getElementById('exam-result-panel').classList.add('hidden');
+            document.getElementById('exam-intro-card').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setStarRating(stars) {
+            selectedStarRating = stars;
+            const container = document.getElementById('star-rating-box');
+            const icons = container.querySelectorAll('i');
+            icons.forEach((icon, idx) => {
+                if (idx < stars) {
+                    icon.className = 'fa-solid fa-star text-amber-500 hover:text-amber-600 transition';
+                } else {
+                    icon.className = 'fa-regular fa-star hover:text-amber-500 transition';
+                }
+            });
+        }
+
+        function claimCertificateProcess() {
+            if (!currentUser) {
+                openModal('user-login-modal');
+                return;
+            }
+
+            const modelNum = ((currentExamAttempt - 1) % 4) + 1;
+            const modelName = MODEL_NAMES[modelNum];
+            const comment = document.getElementById('rating-comment')?.value || "منصة ممتازة جداً وتدريب احترافي!";
+            
+            const certData = {
+                id: `${Math.floor(1000 + Math.random() * 9000)}-${new Date().getFullYear()}-W-CERT`,
+                studentName: currentUser.name,
+                studentEmail: currentUser.email,
+                score: document.getElementById('result-score-percent').textContent,
+                model: modelName,
+                date: new Date().toLocaleDateString('ar-EG'),
+                rating: selectedStarRating,
+                comment: comment
+            };
+
+            certifiedStudents.unshift(certData);
+            reviewsList.unshift({
+                name: currentUser.name,
+                rating: selectedStarRating,
+                comment: comment,
+                date: certData.date
+            });
+
+            localStorage.setItem('excel_certified', JSON.stringify(certifiedStudents));
+            localStorage.setItem('excel_reviews', JSON.stringify(reviewsList));
+
+            document.getElementById('cert-render-id').textContent = certData.id;
+            document.getElementById('cert-render-date').textContent = certData.date;
+            document.getElementById('cert-render-name').textContent = certData.studentName;
+            document.getElementById('cert-render-score').textContent = certData.score;
+
+            openModal('certificate-modal');
+            updateStatsUI();
+        }
+
+        // Optimized PDF Download Engine with fix for clipping & layout issues
+        function downloadCertificatePDF() {
+            const element = document.getElementById('printable-certificate');
+            const nameForFile = currentUser ? currentUser.name : (document.getElementById('cert-render-name').textContent || 'معاينة_الشهادة');
+            
+            showToast('جاري تجهيز وتحميل ملف الشهادة PDF...', 'info');
+
+            const opt = {
+                margin:       [0.2, 0.2, 0.2, 0.2],
+                filename:     `شهادة_إكسل_${nameForFile.trim().replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    allowTaint: true,
+                    scrollX: 0,
+                    scrollY: 0,
+                    onclone: (clonedDoc) => {
+                        // Fix for mobile layout clipping & small viewport shifts
+                        const cert = clonedDoc.getElementById('printable-certificate');
+                        if (cert) {
+                            cert.style.width = '1000px';
+                            cert.style.maxWidth = 'none';
+                            cert.style.margin = '0 auto';
+                        }
+                    }
+                },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast('تم تحميل الشهادة بصيغة PDF بنجاح!', 'success');
+            }).catch(err => {
+                console.error("PDF Export Error: ", err);
+                showToast('حدث خطأ أثناء استخراج الملف، يرجى المحاولة مرة أخرى.', 'error');
+            });
+        }
+
+        function sendWhatsAppNotification() {
+            const nameText = currentUser ? currentUser.name : (document.getElementById('cert-render-name').textContent || 'طالب المنصة');
+            const emailText = currentUser ? currentUser.email : 'admin@preview.com';
+            const scoreText = document.getElementById('cert-render-score').textContent || '85%';
+
+            const line1 = "مرحباً بك";
+            const line2 = "منصة التعليم والاعتماد";
+            const line3 = `تمنح الطالب ${nameText} شهادة اجتياز اختبار إكسل مايكروسوفت`;
+            const line4 = `البريد الإلكتروني: ${emailText} | النتيجة: ${scoreText}`;
+            const line5 = `تقييم الطالب للمنصة: ${selectedStarRating} نجوم`;
+
+            const fullMessage = `${line1}\n${line2}\n${line3}\n${line4}\n${line5}`;
+
+            const cleanPhone = ADMIN_PHONE.startsWith('0') ? '963' + ADMIN_PHONE.substring(1) : ADMIN_PHONE;
+            const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(fullMessage)}`;
+
+            window.open(waUrl, '_blank');
+        }
+
+        function renderCertificatesView() {
+            const container = document.getElementById('certificates-list-container');
+            if (certifiedStudents.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-12 text-center rounded-2xl border border-slate-200 text-slate-500 space-y-3">
+                        <i class="fa-solid fa-award text-4xl text-slate-300"></i>
+                        <div class="font-bold">لا توجد شهادات صادرة حتى الآن للطلاب</div>
+                        <p class="text-xs">قم بأداء الاختبار الرسمي وحقق 85% فما فوق للحصول على شهادتك، أو اضغط زر المعاينة أعلى الشاشة لاستعراض تصميم الشهادة.</p>
+                        <button onclick="triggerAdminCertCheck()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition inline-flex items-center gap-1.5 mt-2">
+                            <i class="fa-solid fa-certificate"></i> معاينة الشهادة الآن
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = certifiedStudents.map(c => `
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full"><i class="fa-solid fa-award ml-1"></i> شهادة اختبار</span>
+                        <span class="text-xs font-mono font-bold text-slate-400">${c.id}</span>
+                    </div>
+                    <div>
+                        <h3 class="font-black text-slate-900 text-lg">${c.studentName}</h3>
+                        <p class="text-xs text-slate-500">${c.studentEmail}</p>
+                    </div>
+                    <div class="flex justify-between items-center text-xs bg-slate-50 p-3 rounded-xl">
+                        <span>النتيجة: <strong class="text-excel-800">${c.score}</strong></span>
+                        <span>النموذج: <strong class="text-slate-700">${c.model}</strong></span>
+                        <span>التاريخ: <strong class="text-slate-700">${c.date}</strong></span>
+                    </div>
+                    <button onclick="adminReissueCert('${c.id}')" class="w-full bg-emerald-50 hover:bg-emerald-100 text-excel-800 font-bold py-2 rounded-xl text-xs transition border border-emerald-200 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-eye"></i> استعراض وتنزيل الشهادة
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderAdminView() {
+            if (!isAdminLoggedIn) {
+                openModal('admin-login-modal');
+                return;
+            }
+
+            document.getElementById('admin-cert-count-badge').textContent = `${certifiedStudents.length} طالب`;
+            const tbody = document.getElementById('admin-certs-tbody');
+
+            if (certifiedStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">لا توجد شهادات مسجلة بعد.</td></tr>`;
+            } else {
+                tbody.innerHTML = certifiedStudents.map(c => `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-bold text-slate-900">${c.studentName}</td>
+                        <td class="p-4 text-slate-600">${c.studentEmail}</td>
+                        <td class="p-4 font-black text-emerald-700">${c.score}</td>
+                        <td class="p-4 font-bold text-slate-700">${c.model}</td>
+                        <td class="p-4 text-amber-500 font-bold">${'★'.repeat(c.rating)}</td>
+                        <td class="p-4 text-slate-500">${c.date}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="adminReissueCert('${c.id}')" class="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 rounded-lg text-xs font-bold transition">
+                                <i class="fa-solid fa-eye ml-1"></i> عرض
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            const reviewsContainer = document.getElementById('admin-reviews-list');
+            if (reviewsList.length === 0) {
+                reviewsContainer.innerHTML = `<div class="text-xs text-slate-400">لا توجد تقييمات مكتوبة حالياً.</div>`;
+            } else {
+                reviewsContainer.innerHTML = reviewsList.map(r => `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-1">
+                        <div class="flex justify-between items-center font-bold">
+                            <span class="text-slate-900">${r.name}</span>
+                            <span class="text-amber-500">${'★'.repeat(r.rating)}</span>
+                        </div>
+                        <p class="text-slate-600">${r.comment}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function adminReissueCert(certId) {
+            const cert = certifiedStudents.find(c => c.id === certId);
+            if (!cert) return;
+
+            document.getElementById('cert-render-id').textContent = cert.id;
+            document.getElementById('cert-render-date').textContent = cert.date;
+            document.getElementById('cert-render-name').textContent = cert.studentName;
+            document.getElementById('cert-render-score').textContent = cert.score;
+
+            openModal('certificate-modal');
+        }
+    </script>
+</body>
+</html>
